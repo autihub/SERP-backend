@@ -69,8 +69,9 @@ MVP 阶段暂不做原生 App、复杂平台直连、多门店和智能预测。
 
 ## 5. P0：开发准备和工程初始化
 
-- [ ] P0-01 初始化前端 Vue 3 + Vite + TypeScript 项目
+- [x] P0-01 初始化前端 Vue 3 + Vite + TypeScript 项目
   - 验收：可以启动开发服务器，能显示基础布局和路由入口。
+  - 实际完成：Vue 3 + Vite 6 + TypeScript 工程，集成 Vue Router 4、Pinia、Element Plus（按需自动导入）、Axios；搭建 DefaultLayout（侧边栏+顶栏+内容区）与一期模块路由（工作台/采购/库存/销售/经营分析 + 404）；`npm run build` 通过（vue-tsc 类型检查 + vite 生产构建）；dev server 可启动（http://localhost:5173，返回 200，基础布局可见）。代码已推送至 autihub/SERP-frontend main（commit f44e18f）。
 - [ ] P0-02 初始化后端 Spring Boot 3 + Java 17 + Gradle 项目
   - 验收：可以启动服务，提供健康检查接口。
 - [ ] P0-03 建立前后端目录结构和模块边界
@@ -264,10 +265,10 @@ IDEA-XXX：
 ### Iteration-001 · 工程初始化
 
 - 目标：完成前端、后端、数据库的最小可运行骨架
-- 状态：`[ ]`
+- 状态：`[/]`
 - 计划任务：P0-01 ～ P0-07
-- 实际完成：
-- 遗留问题：
+- 实际完成：P0-01（前端工程初始化）已完成并验证。
+- 遗留问题：P0-02 ～ P0-07 待开始（后端工程、目录与模块边界、本地 MySQL、Flyway、统一响应格式、env 与启动文档）。
 - 验证方式：前端启动、后端健康检查、数据库迁移成功
 - 完成日期：
 

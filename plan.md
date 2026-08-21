@@ -72,16 +72,20 @@ MVP 阶段暂不做原生 App、复杂平台直连、多门店和智能预测。
 - [x] P0-01 初始化前端 Vue 3 + Vite + TypeScript 项目
   - 验收：可以启动开发服务器，能显示基础布局和路由入口。
   - 实际完成：Vue 3 + Vite 6 + TypeScript 工程，集成 Vue Router 4、Pinia、Element Plus（按需自动导入）、Axios；搭建 DefaultLayout（侧边栏+顶栏+内容区）与一期模块路由（工作台/采购/库存/销售/经营分析 + 404）；`npm run build` 通过（vue-tsc 类型检查 + vite 生产构建）；dev server 可启动（http://localhost:5173，返回 200，基础布局可见）。代码已推送至 autihub/SERP-frontend main（commit f44e18f）。
-- [ ] P0-02 初始化后端 Spring Boot 3 + Java 17 + Gradle 项目
+- [/] P0-02 初始化后端 Spring Boot 3 + Java 17 + Gradle 项目
   - 验收：可以启动服务，提供健康检查接口。
+  - 实际完成：Spring Boot 3.3.5 + Java 17 + Gradle 8.10.2 工程已搭建（build.gradle/settings.gradle/Gradle wrapper），含 SerpApplication 启动类与 HealthController（GET /api/health），Actuator 已引入。**待本地 Java 环境验证启动与健康检查。**
 - [ ] P0-03 建立前后端目录结构和模块边界
   - 验收：采购、库存、销售、用户模块边界清晰。
-- [ ] P0-04 配置本地 MySQL 8.4 和数据库连接
+- [/] P0-04 配置本地 MySQL 8.4 和数据库连接
   - 验收：应用可以通过环境变量连接本地数据库。
-- [ ] P0-05 接入 Flyway 数据库迁移
+  - 实际完成：application.yml 通过 DB_HOST/DB_PORT/DB_NAME/DB_USER/PASSWORD 环境变量配置 MySQL 连接（本地默认值 localhost:3306/serp/root/root），含 .env.example 模板。**待本地 MySQL 环境验证连接。**
+- [/] P0-05 接入 Flyway 数据库迁移
   - 验收：新环境可以通过迁移脚本创建数据库，不依赖手工建表。
-- [ ] P0-06 统一 API 响应格式、错误码和异常处理
+  - 实际完成：引入 flyway-core + flyway-mysql，配置 baseline-on-migrate，迁移目录 db/migration，V1__init_foundation.sql 建 sys_user + operation_log 基础表。业务表按迭代在 V2/V3 追加。**待本地 MySQL 环境验证迁移执行。**
+- [/] P0-06 统一 API 响应格式、错误码和异常处理
   - 验收：成功、参数错误、未登录、无权限、服务器错误都有统一格式。
+  - 实际完成：Result<T> 统一返回（{code,message,data,timestamp}）、ResultCode 错误码枚举（0成功/400/401/403/404/500/900业务）、BusinessException、@RestControllerAdvice 全局异常处理（参数校验/资源不存在/业务异常/服务器错误），含 ResultTest 单测。**待本地 Java 环境运行测试验证。**
 - [ ] P0-07 建立 `.env.example`、本地启动文档和基础 Git 规范
   - 验收：新环境按文档可以完成启动，密钥不会提交到仓库。
 
@@ -267,8 +271,8 @@ IDEA-XXX：
 - 目标：完成前端、后端、数据库的最小可运行骨架
 - 状态：`[/]`
 - 计划任务：P0-01 ～ P0-07
-- 实际完成：P0-01（前端工程初始化）已完成并验证。
-- 遗留问题：P0-02 ～ P0-07 待开始（后端工程、目录与模块边界、本地 MySQL、Flyway、统一响应格式、env 与启动文档）。
+- 实际完成：P0-01（前端工程初始化）已完成并验证。P0-02/P0-04/P0-05/P0-06（后端工程、MySQL 连接、Flyway、统一响应/异常）代码已完成，待本地 Java17 + MySQL 环境验证后改 [x]。
+- 遗留问题：①本工作机当前未安装 Java/Gradle/MySQL，后端未能本地编译/启动/迁移验证，需在本地开发环境（Mac Mini，按架构图用 Homebrew 装 JDK17 + MySQL8.4）验证；②P0-03（前后端模块边界）、P0-07（启动文档/Git 规范，.env.example/.gitignore 已建）待补。
 - 验证方式：前端启动、后端健康检查、数据库迁移成功
 - 完成日期：
 

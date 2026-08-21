@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>刨冰店库存管理系统 · 架构图</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#f8fafc;color:#0a1e46;
+  font-family:'Inter','Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ===== Blueprint Grid Background ===== */
+body{background:
+  repeating-linear-gradient(0deg,rgba(10,30,70,.06) 0 1px,transparent 1px 40px),
+  repeating-linear-gradient(90deg,rgba(10,30,70,.06) 0 1px,transparent 1px 40px),
+  #f8fafc}
+
+/* ===== Container ===== */
+.container{max-width:1400px;margin:0 auto;padding:40px 48px 60px}
+
+/* ===== Header ===== */
+.header{text-align:center;margin-bottom:48px;position:relative}
+.header::after{content:'';display:block;width:80px;height:3px;background:#0a1e46;margin:20px auto 0}
+.header .kicker{font-family:'JetBrains Mono','IBM Plex Mono',monospace;
+  font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#1e5ac4;margin:0 0 12px}
+.header h1{font-size:48px;font-weight:700;margin:0 0 8px;letter-spacing:-.03em;line-height:1.1}
+.header .sub{font-size:18px;color:#3a4a6a;font-weight:300;margin:0}
+.header .tags{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.header .tags span{font-family:'JetBrains Mono',monospace;font-size:12px;
+  padding:5px 14px;border:1px solid #0a1e46;background:rgba(255,255,255,.85);
+  text-transform:uppercase;letter-spacing:.08em}
+
+/* ===== Phase Section ===== */
+.phase-section{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:48px}
+
+/* ===== Phase Card ===== */
+.phase-card{background:rgba(255,255,255,.92);border:1.5px solid #0a1e46;position:relative}
+.phase-card .phase-header{padding:20px 28px;border-bottom:1.5px solid #0a1e46;
+  display:flex;align-items:center;justify-content:space-between}
+.phase-card .phase-header h2{margin:0;font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.phase-card .phase-header .env-tag{font-family:'JetBrains Mono',monospace;font-size:11px;
+  padding:4px 12px;border:1px solid #0a1e46;letter-spacing:.1em}
+.phase-card .phase-body{padding:28px}
+.phase-card .env-label{font-size:13px;font-family:'JetBrains Mono',monospace;
+  color:#1e5ac4;letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px}
+
+/* ===== Architecture Diagram ===== */
+.arch{display:flex;flex-direction:column;gap:20px;position:relative}
+.arch .layer{display:grid;grid-template-columns:100px 1fr;gap:16px;align-items:stretch}
+.arch .layer .label{display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:#3a4a6a;
+  border:1px solid #0a1e46;background:rgba(10,30,70,.04);padding:10px 8px;text-align:center}
+.arch .layer .nodes{display:grid;grid-template-columns:1fr;gap:10px}
+.arch .layer .nodes.two{grid-template-columns:1fr 1fr}
+.arch .layer .node{background:rgba(255,255,255,.95);border:1px solid #0a1e46;
+  padding:14px 18px;text-align:center;position:relative}
+.arch .layer .node .icon{font-size:22px;margin-bottom:4px}
+.arch .layer .node .name{font-size:14px;font-weight:600;margin:0 0 2px}
+.arch .layer .node .tech{font-family:'JetBrains Mono',monospace;font-size:11px;color:#3a4a6a;margin:0}
+.arch .layer .node .port{font-family:'JetBrains Mono',monospace;font-size:10px;color:#8090a8;margin:4px 0 0}
+.arch .layer .node.highlight{border-color:#1e5ac4;border-width:2px}
+.arch .layer .node.highlight::after{content:'';position:absolute;top:-1px;left:-1px;right:-1px;height:3px;background:#1e5ac4}
+
+/* ===== Arrow Connectors ===== */
+.connector{position:relative;display:flex;align-items:center;justify-content:center;height:36px}
+.connector .line{flex:1;height:0;border-top:1.5px dashed #8090a8;position:relative}
+.connector .line.solid{border-top-style:solid}
+.connector .arrow{position:absolute;right:-1px;top:-5px;width:0;height:0;
+  border-left:7px solid #8090a8;border-top:5px solid transparent;border-bottom:5px solid transparent}
+.connector .label{position:absolute;background:#f8fafc;padding:0 10px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:#3a4a6a;letter-spacing:.04em;
+  white-space:nowrap;z-index:1}
+.connector .label.left{left:10px}
+.connector .label.center{left:50%;transform:translateX(-50%)}
+
+/* ===== Vertical Arrow ===== */
+.v-connector{display:flex;flex-direction:column;align-items:center;height:28px;justify-content:center}
+.v-connector .v-line{width:0;flex:1;border-left:1.5px dashed #8090a8}
+.v-connector .v-arrow{width:0;height:0;border-top:7px solid #8090a8;
+  border-left:5px solid transparent;border-right:5px solid transparent}
+
+/* ===== Environment Box ===== */
+.env-box{position:relative;border:2px solid #0a1e46;padding:20px;margin-top:20px;
+  background:rgba(10,30,70,.02)}
+.env-box .env-title{position:absolute;top:-12px;left:20px;background:#f8fafc;
+  padding:0 10px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase}
+.env-box .env-specs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.env-box .env-specs .spec{font-size:12px;color:#3a4a6a;font-family:'JetBrains Mono',monospace}
+.env-box .env-specs .spec .v{color:#0a1e46;font-weight:600}
+
+/* ===== Tech Stack Summary ===== */
+.tech-stack{margin-top:48px}
+.tech-stack h2{font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace;
+  margin:0 0 20px;text-align:center}
+.tech-stack h2::after{content:'';display:block;width:60px;height:2px;background:#0a1e46;margin:10px auto 0}
+.tech-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.tech-grid .tech-card{background:rgba(255,255,255,.92);border:1px solid #0a1e46;
+  padding:18px 20px;text-align:center}
+.tech-grid .tech-card .tc-icon{font-size:28px;margin-bottom:6px}
+.tech-grid .tech-card .tc-name{font-size:15px;font-weight:600;margin:0 0 4px}
+.tech-grid .tech-card .tc-version{font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e5ac4;margin:0 0 6px}
+.tech-grid .tech-card .tc-desc{font-size:12px;color:#3a4a6a;margin:0;line-height:1.5}
+.tech-grid .tech-card.highlight{border-color:#1e5ac4;border-width:2px}
+
+/* ===== Data Flow ===== */
+.flow-section{margin-top:48px}
+.flow-section h2{font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace;
+  margin:0 0 20px;text-align:center}
+.flow-section h2::after{content:'';display:block;width:60px;height:2px;background:#0a1e46;margin:10px auto 0}
+.flow-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.flow-row .f-node{background:rgba(255,255,255,.92);border:1px solid #0a1e46;
+  padding:10px 16px;text-align:center;min-width:80px}
+.flow-row .f-node .f-icon{font-size:18px}
+.flow-row .f-node .f-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#3a4a6a;margin:2px 0 0}
+.flow-row .f-node.highlight{border-color:#1e5ac4;border-width:2px}
+.flow-row .f-arrow{color:#8090a8;font-size:18px;font-weight:300}
+.flow-row .f-arrow.v{transform:rotate(90deg);display:inline-block}
+
+/* ===== Deployment Flow ===== */
+.deploy-flow{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:24px;flex-wrap:wrap}
+.deploy-flow .d-node{background:rgba(255,255,255,.92);border:1px solid #0a1e46;
+  padding:14px 20px;text-align:center;min-width:100px;flex:1;max-width:180px}
+.deploy-flow .d-node .d-icon{font-size:24px;margin-bottom:4px}
+.deploy-flow .d-node .d-label{font-size:13px;font-weight:600;margin:0}
+.deploy-flow .d-node .d-detail{font-family:'JetBrains Mono',monospace;font-size:10px;color:#3a4a6a;margin:2px 0 0}
+.deploy-flow .d-arrow{color:#8090a8;font-size:22px}
+
+/* ===== Footer ===== */
+.footer{text-align:center;margin-top:60px;padding-top:24px;
+  border-top:1px solid rgba(10,30,70,.22);font-size:13px;color:#3a4a6a}
+.footer .mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:#8090a8}
+
+/* ===== Responsive ===== */
+@media(max-width:900px){
+  .phase-section{grid-template-columns:1fr}
+  .tech-grid{grid-template-columns:repeat(2,1fr)}
+  .container{padding:24px 20px 40px}
+  .header h1{font-size:32px}
+}
+@media(max-width:500px){
+  .tech-grid{grid-template-columns:1fr}
+  .arch .layer{grid-template-columns:1fr}
+  .arch .layer .label{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <p class="kicker">System Architecture · 2026</p>
+    <h1>🏔️ 山与海 · 库存管理系统</h1>
+    <p class="sub">从本地开发到生产上云 · 完整技术架构</p>
+    <div class="tags">
+      <span>Vue 3</span>
+      <span>Java 17</span>
+      <span>Spring Boot</span>
+      <span>MySQL 8.4 LTS</span>
+      <span>Nginx</span>
+      <span>Tencent Cloud</span>
+    </div>
+  </div>
+
+  <!-- ===== PHASE 1 & 2 ===== -->
+  <div class="phase-section">
+
+    <!-- Phase 1: Local Mac Mini -->
+    <div class="phase-card">
+      <div class="phase-header">
+        <h2>📦 阶段一 · 本地开发</h2>
+        <span class="env-tag">DEVELOPMENT</span>
+      </div>
+      <div class="phase-body">
+        <p class="env-label">Mac Mini · Apple Silicon</p>
+
+        <div class="arch">
+          <!-- Browser -->
+          <div class="layer">
+            <div class="label">Client</div>
+            <div class="nodes">
+              <div class="node highlight">
+                <div class="icon">🌐</div>
+                <p class="name">Chrome / Safari</p>
+                <p class="tech">Vite Dev Server</p>
+                <p class="port">localhost:5173</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector">
+            <div class="line solid"><span class="arrow"></span></div>
+            <span class="label center">HTTP API · REST</span>
+          </div>
+
+          <!-- Backend -->
+          <div class="layer">
+            <div class="label">Backend</div>
+            <div class="nodes">
+              <div class="node highlight">
+                <div class="icon">☕</div>
+                <p class="name">Spring Boot</p>
+                <p class="tech">Java 17 · Gradle</p>
+                <p class="port">localhost:8080</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector">
+            <div class="line solid"><span class="arrow"></span></div>
+            <span class="label center">JDBC · port 3306</span>
+          </div>
+
+          <!-- Database -->
+          <div class="layer">
+            <div class="label">Data</div>
+            <div class="nodes">
+              <div class="node highlight">
+                <div class="icon">🗄️</div>
+                  <p class="name">MySQL 8.4 LTS</p>
+                <p class="tech">自建 · Homebrew</p>
+                <p class="port">localhost:3306</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Environment Details -->
+        <div class="env-box">
+          <div class="env-title">💻 开发环境</div>
+          <div class="env-specs">
+            <span class="spec">OS: <span class="v">macOS (Apple Silicon)</span></span>
+            <span class="spec">Node: <span class="v">v18+</span></span>
+            <span class="spec">IDE: <span class="v">IntelliJ IDEA</span></span>
+            <span class="spec">Build: <span class="v">Gradle + Vite</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Tencent Cloud -->
+    <div class="phase-card">
+      <div class="phase-header">
+        <h2>☁️ 阶段二 · 生产上云</h2>
+        <span class="env-tag">PRODUCTION</span>
+      </div>
+      <div class="phase-body">
+        <p class="env-label">Tencent Cloud · CVM</p>
+
+        <div class="arch">
+          <!-- Client -->
+          <div class="layer">
+            <div class="label">Client</div>
+            <div class="nodes">
+              <div class="node highlight">
+                <div class="icon">📱</div>
+                <p class="name">浏览器 / 移动端</p>
+                <p class="tech">HTTPS · 公网访问</p>
+                <p class="port">域名 → CVM IP</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector">
+            <div class="line solid"><span class="arrow"></span></div>
+            <span class="label center">HTTPS :443</span>
+          </div>
+
+          <!-- Nginx -->
+          <div class="layer">
+            <div class="label">Gateway</div>
+            <div class="nodes">
+              <div class="node highlight">
+                <div class="icon">🚀</div>
+                <p class="name">Nginx</p>
+                <p class="tech">反向代理 · 静态资源</p>
+                <p class="port">host:80 → :443</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector">
+            <div class="line solid"><span class="arrow"></span></div>
+            <span class="label center">proxy_pass :8080</span>
+          </div>
+
+          <!-- Backend -->
+          <div class="layer">
+            <div class="label">Backend</div>
+            <div class="nodes two">
+              <div class="node highlight">
+                <div class="icon">☕</div>
+                <p class="name">Spring Boot</p>
+                <p class="tech">Java 17 · JAR</p>
+                <p class="port">127.0.0.1:8080</p>
+              </div>
+              <div class="node">
+                <div class="icon">📦</div>
+                <p class="name">Vue3 SPA</p>
+                <p class="tech">Nginx 托管静态文件</p>
+                <p class="port">/usr/share/nginx/html</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector">
+            <div class="line solid"><span class="arrow"></span></div>
+            <span class="label center">JDBC · 127.0.0.1:3306</span>
+          </div>
+
+          <!-- Database -->
+          <div class="layer">
+            <div class="label">Data</div>
+            <div class="nodes">
+              <div class="node highlight">
+                <div class="icon">🗄️</div>
+                  <p class="name">MySQL 8.4 LTS</p>
+                <p class="tech">自建 · 同一 CVM</p>
+                <p class="port">127.0.0.1:3306</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Environment Details -->
+        <div class="env-box">
+          <div class="env-title">🖥️ 生产环境</div>
+          <div class="env-specs">
+            <span class="spec">OS: <span class="v">TencentOS / Ubuntu 22.04</span></span>
+            <span class="spec">部署: <span class="v">JAR + Nginx systemd</span></span>
+            <span class="spec">域名: <span class="v">自定义域名 + SSL</span></span>
+            <span class="spec">防火墙: <span class="v">安全组放行 80/443</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== TECH STACK ===== -->
+  <div class="tech-stack">
+    <h2>🔧 技术选型速览</h2>
+    <div class="tech-grid">
+      <div class="tech-card highlight">
+        <div class="tc-icon">🖼️</div>
+        <p class="tc-name">Vue 3</p>
+        <p class="tc-version">Composition API</p>
+        <p class="tc-desc">前端 SPA 框架<br>Vite 构建 + TypeScript<br>Element Plus UI 库</p>
+      </div>
+      <div class="tech-card highlight">
+        <div class="tc-icon">☕</div>
+        <p class="tc-name">Java 17</p>
+        <p class="tc-version">Spring Boot 3.x</p>
+        <p class="tc-desc">后端 REST API<br>MyBatis-Plus 持久层<br>Lombok + MapStruct</p>
+      </div>
+      <div class="tech-card highlight">
+        <div class="tc-icon">🗄️</div>
+        <p class="tc-name">MySQL 8.4 LTS</p>
+        <p class="tc-version">自建部署</p>
+        <p class="tc-desc">关系型数据库<br>库存、订单、商品表<br>本地 & 云上一致</p>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">🌐</div>
+        <p class="tc-name">Nginx</p>
+        <p class="tc-version">反向代理</p>
+        <p class="tc-desc">静态资源托管<br>API 反向代理<br>SSL 终端代理</p>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">☁️</div>
+        <p class="tc-name">Tencent Cloud</p>
+        <p class="tc-version">CVM</p>
+        <p class="tc-desc">云服务器部署<br>安全组管理<br>弹性公网 IP</p>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">🐙</div>
+        <p class="tc-name">GitHub</p>
+        <p class="tc-version">Git</p>
+        <p class="tc-desc">源码版本管理<br>CI/CD 持续集成<br>代码 Review</p>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">🧪</div>
+        <p class="tc-name">本地开发</p>
+        <p class="tc-version">Mac Mini</p>
+        <p class="tc-desc">Apple Silicon<br>IntelliJ IDEA<br>Homebrew 包管理</p>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">🔒</div>
+        <p class="tc-name">SSL</p>
+        <p class="tc-version">Let's Encrypt</p>
+        <p class="tc-desc">HTTPS 证书<br>自动续期<br>安全加密传输</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DATA FLOW ===== -->
+  <div class="flow-section">
+    <h2>🔄 请求数据流</h2>
+    <div class="flow-row">
+      <div class="f-node highlight">
+        <div class="f-icon">🌐</div>
+        <div class="f-label">浏览器</div>
+      </div>
+      <span class="f-arrow">→</span>
+      <div class="f-node">
+        <div class="f-icon">🚀</div>
+        <div class="f-label">Nginx</div>
+      </div>
+      <span class="f-arrow">→</span>
+      <div class="f-node highlight">
+        <div class="f-icon">☕</div>
+        <div class="f-label">Spring Boot</div>
+      </div>
+      <span class="f-arrow">→</span>
+      <div class="f-node">
+        <div class="f-icon">🎯</div>
+        <div class="f-label">Controller</div>
+      </div>
+      <span class="f-arrow">→</span>
+      <div class="f-node">
+        <div class="f-icon">📋</div>
+        <div class="f-label">Service</div>
+      </div>
+      <span class="f-arrow">→</span>
+      <div class="f-node">
+        <div class="f-icon">📡</div>
+        <div class="f-label">Mapper</div>
+      </div>
+      <span class="f-arrow">→</span>
+      <div class="f-node highlight">
+        <div class="f-icon">🗄️</div>
+        <div class="f-label">MySQL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DEPLOYMENT FLOW ===== -->
+  <div class="flow-section">
+    <h2>📤 部署流程</h2>
+    <div class="deploy-flow">
+      <div class="d-node">
+        <div class="d-icon">💻</div>
+        <p class="d-label">本地编码</p>
+        <p class="d-detail">Mac Mini · IDEA</p>
+      </div>
+      <span class="d-arrow">→</span>
+      <div class="d-node">
+        <div class="d-icon">📤</div>
+        <p class="d-label">git push</p>
+        <p class="d-detail">GitHub 仓库</p>
+      </div>
+      <span class="d-arrow">→</span>
+      <div class="d-node">
+        <div class="d-icon">🔧</div>
+        <p class="d-label">构建部署</p>
+        <p class="d-detail">SSH → CVM</p>
+      </div>
+      <span class="d-arrow">→</span>
+      <div class="d-node">
+        <div class="d-icon">✅</div>
+        <p class="d-label">运行验证</p>
+        <p class="d-detail">Nginx + JAR</p>
+      </div>
+      <span class="d-arrow">→</span>
+      <div class="d-node">
+        <div class="d-icon">☁️</div>
+        <p class="d-label">线上服务</p>
+        <p class="d-detail">Tencent Cloud</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <p>🏔️ 山与海 · 库存管理系统 · 架构设计 v1.0</p>
+    <p class="mono">Phase 1: Mac Mini (Local) → Phase 2: Tencent Cloud (Production)</p>
+  </div>
+
+</div>
+</body>
+</html>
